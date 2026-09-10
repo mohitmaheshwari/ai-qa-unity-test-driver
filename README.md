@@ -1,5 +1,7 @@
 # AI-Assisted Unity Smoke Test Driver
 
+[![CI](https://github.com/mohitmaheshwari/ai-qa-unity-test-driver/actions/workflows/ci.yml/badge.svg)](https://github.com/mohitmaheshwari/ai-qa-unity-test-driver/actions/workflows/ci.yml)
+
 A small instrumentation layer that turns a scenario written in plain English into an
 executable smoke test for a Unity game, runs it on a real build, and reports the result
 to Slack and CI.
