@@ -1,0 +1,13 @@
+bin/
+obj/
+*.user
+TestResults/
+artifacts/
+
+# Unity
+Library/
+Temp/
+Logs/
+Build/
+UserSettings/
+*.csproj.user

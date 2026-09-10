@@ -1,0 +1,14 @@
+# Written by QA in plain language, executed verbatim by the driver.
+# Every element a step touches is quoted, so a reviewer can see exactly what
+# an AI-drafted scenario will do before it ever runs on a device.
+
+Scenario: New player can complete the first build step
+timeout: 15s
+
+  Given the game is on the "MainMenu" screen
+  When I tap "PlayButton"
+  And I wait for "TutorialOverlay" for 30s
+  And I tap "BuildFarmButton"
+  Then "ResourceBar" should show "100 wood"
+  And "TutorialOverlay" should be visible
+  And I capture "tutorial-complete"
