@@ -91,7 +91,7 @@ I'd rather be precise about this than let a reader assume more than is true.
 |---|---|
 | `TestDriver.Core` — parser, runner, reporters | **32 tests, green in CI** (see badge/Actions) |
 | The shipped `tutorial-smoke.scenario` | **Covered** — CI parses and runs it against a fake game, in both passing and stalled-tutorial states |
-| `UnityGameDriver` | **Compiles against Unity 2021.2+; not exercised in CI** — it needs an editor and a build, so it is verified by hand |
+| `UnityGameDriver` | **Compiles against Unity 2021.2+; not exercised in CI** — it needs an editor and a build, so it is checked by hand rather than by the suite |
 | Real-device execution (Android/iOS) | **Not included** — the driver is device-agnostic by design, but no device lab is wired up here |
 
 The Unity adapter is guarded by `#if UNITY_2021_2_OR_NEWER` so the .NET solution builds
@@ -122,29 +122,34 @@ var result   = await new ScenarioRunner(driver).RunAsync(scenario);
 
 ## How this was built with Claude Code
 
-<!--
-  TODO (Shobhit) — this section is the one Goodgame will actually read, and it has to be
-  yours. Do not ship the placeholder text below. Rewrite it in your own words, and only
-  claim what actually happened. Specifics beat adjectives; one real correction you made
-  is worth more than three sentences about how much time it saved.
+I built this with Claude Code, which is also roughly how I'd want to work on a real
+project like this. Most of the code here was AI-written. The design decisions weren't,
+and neither was catching the two things below.
 
-  Worth covering:
-    - What you had Claude Code write end-to-end, and what you specified up front
-      (e.g. the strict-parser and screenshot-on-failure rules were design decisions,
-      not something the model volunteered)
-    - Where it got things wrong and you caught it. Real examples from this build:
-        * The first Slack reporter hand-rolled JSON escaping and produced a payload
-          with an unescaped quote — caught by adding a balanced-JSON assertion rather
-          than by reading the code.
-        * The first pass targeted a framework the machine could not run, so the suite
-          compiled but no test ever executed. A green build log that runs zero tests
-          is exactly the failure this project is about.
-    - What you would not let it decide: the six-method IGameDriver surface, and the
-      netstandard2.1 target for Unity compatibility
-    - Roughly what share of the code it wrote versus what you rewrote
--->
+**What I decided up front, before any code:** the six-method `IGameDriver` interface,
+the `netstandard2.1` target so the same assembly runs in CI and in Unity, and the three
+rules above — strict parsing, no silent skips, screenshot on every failure. Those came
+from having watched suites get abandoned, not from a model suggesting them.
 
-_(section to be written by hand — see comment above)_
+**Two things it got wrong, and how they surfaced.**
+
+The Slack reporter hand-rolls its JSON escaping, because I didn't want a serializer
+dependency inside Unity. The first version of that escaping was subtly broken and
+produced a payload with an unescaped quote in it. I didn't catch it by reading the
+code — it looks fine when you read it. I caught it by adding a test that walks the
+output and asserts the braces and quotes are balanced. That's the general lesson: for
+generated code, assert on the output, don't review your way to confidence.
+
+The second one is more on-topic for this repo. The test project was initially targeting
+a .NET version that wasn't installed on my machine. Everything compiled. The build log
+was clean. And zero tests actually ran — the test host just failed to start. If I'd
+been skimming for "did it build", I'd have shipped a suite that proved nothing. That is
+exactly the failure this whole project is built around, so it was a useful thing to walk
+into personally.
+
+**What I'd check on anything AI-generated, in order:** did it actually execute, can the
+assertion fail if I break the thing it's testing, and does a passing run prove what I
+think it proves. Most generated tests fail at least one of those.
 
 ---
 
